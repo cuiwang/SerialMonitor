@@ -52,7 +52,8 @@ class SerialPortManager {
                     config.stopBits,
                     config.parity
                 )
-                setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, 0, 0)
+                // 使用非阻塞读取降低延迟
+                setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0)
             }
 
             if (serialPort!!.openPort()) {
@@ -142,10 +143,16 @@ class SerialPortManager {
             val buffer = ByteArray(1024)
             while (shouldKeepReading && serialPort?.isOpen == true) {
                 try {
-                    val numRead = serialPort!!.readBytes(buffer, buffer.size.toLong())
-                    if (numRead > 0) {
-                        val data = String(buffer, 0, numRead.toInt())
-                        notifyDataReceived(data)
+                    val available = serialPort!!.bytesAvailable()
+                    if (available > 0) {
+                        val readSize = minOf(buffer.size, available)
+                        val numRead = serialPort!!.readBytes(buffer, readSize.toLong())
+                        if (numRead > 0) {
+                            val data = String(buffer, 0, numRead.toInt())
+                            notifyDataReceived(data)
+                        }
+                    } else {
+                        Thread.sleep(2)
                     }
                 } catch (e: Exception) {
                     if (shouldKeepReading) {
@@ -153,7 +160,6 @@ class SerialPortManager {
                     }
                     break
                 }
-                Thread.sleep(10) // 避免CPU占用过高
             }
         }.apply {
             isDaemon = true
@@ -174,7 +180,3 @@ class SerialPortManager {
         listeners.forEach { it.onError(message) }
     }
 }
-
-
-
-

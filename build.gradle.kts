@@ -16,6 +16,9 @@ dependencies {
     // Serial communication library - 使用jSerialComm（更可靠）
     implementation("com.fazecast:jSerialComm:[2.8.0,2.9.0)")
 
+    // 图表库 - 用于绘制实时数据
+    implementation("org.knowm.xchart:xchart:3.8.7")
+
     // 注意: Kotlin stdlib 和 Kotlin Coroutines 已由 IntelliJ Platform 提供，无需显式添加
 
     // Testing
@@ -56,6 +59,7 @@ tasks {
         enabled = true
     }
 }
+
 
 
 
