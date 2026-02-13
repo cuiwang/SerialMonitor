@@ -1,0 +1,57 @@
+<idea-plugin>
+    <id>com.serialmonitor.clion</id>
+    <name>Serial Monitor</name>
+    <vendor email="dev@example.com" url="https://github.com/yourusername/CLion-SerialMonitor">Serial Monitor</vendor>
+
+    <description><![CDATA[
+        A powerful Serial Port Monitor for CLion IDE.
+        Features:
+        <ul>
+            <li>Real-time serial port monitoring</li>
+            <li>Automatic port detection</li>
+            <li>Configurable baud rates</li>
+            <li>Send data to serial port</li>
+            <li>Auto-scroll and clear output</li>
+        </ul>
+    ]]></description>
+
+    <change-notes><![CDATA[
+        <b>1.0.0</b>
+        <ul>
+            <li>Initial release</li>
+            <li>Serial port monitoring</li>
+            <li>Port detection and baud rate configuration</li>
+        </ul>
+    ]]></change-notes>
+
+    <!-- Product and plugin compatibility -->
+    <idea-version since-build="241" until-build="241.*"/>
+
+    <!-- Declare plugin extensions -->
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="SerialMonitor"
+                    secondary="false"
+                    icon="AllIcons.Debugger.Console"
+                    factoryClass="com.serialmonitor.ui.SerialMonitorToolWindowFactory"
+                    anchor="bottom">
+        </toolWindow>
+
+        <applicationConfigurable parentId="tools"
+                                 instance="com.serialmonitor.settings.SerialMonitorSettingsConfigurable"
+                                 id="com.serialmonitor.settings"
+                                 displayName="Serial Monitor"/>
+
+        <applicationService serviceImplementation="com.serialmonitor.settings.SerialMonitorSettings"/>
+    </extensions>
+
+    <application-components>
+    </application-components>
+
+    <project-components>
+    </project-components>
+
+    <actions>
+        <!-- Add actions here if needed -->
+    </actions>
+</idea-plugin>
+
