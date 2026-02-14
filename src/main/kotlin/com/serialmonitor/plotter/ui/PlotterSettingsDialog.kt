@@ -21,7 +21,7 @@ class PlotterSettingsDialog(
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
         setupUI()
-        setSize(400, 250)
+        setSize(450, 350)  // 增加对话框尺寸
         setLocationRelativeTo(parent)
     }
 
@@ -29,35 +29,30 @@ class PlotterSettingsDialog(
         val contentPane = contentPane
         contentPane.layout = BorderLayout(10, 10)
 
-        // 设置面板
+        // 设置面板 - 使用 BoxLayout 替代 GridLayout
         val settingsPanel = JPanel().apply {
-            layout = GridLayout(5, 2, 10, 10)
-            border = BorderFactory.createEmptyBorder(15, 15, 15, 15)
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            border = BorderFactory.createEmptyBorder(20, 20, 20, 20)
 
             // 数据项分隔符
-            add(JLabel("Item Separator:"))
-            add(itemSeparatorField)
+            add(createLabeledField("Item Separator:", itemSeparatorField))
+            add(Box.createVerticalStrut(15))  // 间距
 
             // 名称-值分隔符
-            add(JLabel("Name-Value Separator:"))
-            add(nameSeparatorField)
+            add(createLabeledField("Name-Value Separator:", nameSeparatorField))
+            add(Box.createVerticalStrut(15))
 
             // 窗口大小
-            add(JLabel("Window Size:"))
-            add(windowSizeField)
+            add(createLabeledField("Window Size:", windowSizeField))
+            add(Box.createVerticalStrut(15))
 
             // 最大缓存
-            add(JLabel("Max Cache:"))
-            add(maxCacheField)
+            add(createLabeledField("Max Cache:", maxCacheField))
+            add(Box.createVerticalStrut(20))
 
             // 说明信息
-            add(JLabel("Example:"))
-            val exampleLabel = JLabel("<html>" +
-                "Data: name1${itemSeparatorField.text}value1${nameSeparatorField.text}1<br/>" +
-                "Data: name2${itemSeparatorField.text}value2${nameSeparatorField.text}2" +
-                "</html>")
-            exampleLabel.font = Font("Monospace", Font.PLAIN, 11)
-            add(exampleLabel)
+            add(createExamplePanel())
+            add(Box.createVerticalGlue())  // 底部弹性空间
         }
 
         contentPane.add(settingsPanel, BorderLayout.CENTER)
@@ -82,6 +77,58 @@ class PlotterSettingsDialog(
         }
 
         contentPane.add(buttonPanel, BorderLayout.SOUTH)
+    }
+
+    /**
+     * 创建带标签的输入框面板
+     */
+    private fun createLabeledField(labelText: String, field: JTextField): JPanel {
+        return JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.X_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+
+            val label = JLabel(labelText).apply {
+                preferredSize = Dimension(180, 25)
+                minimumSize = Dimension(180, 25)
+                maximumSize = Dimension(180, 25)
+            }
+
+            field.apply {
+                preferredSize = Dimension(200, 30)  // 设置合适的输入框高度
+                minimumSize = Dimension(150, 30)
+                maximumSize = Dimension(300, 30)
+            }
+
+            add(label)
+            add(Box.createHorizontalStrut(10))
+            add(field)
+            add(Box.createHorizontalGlue())
+        }
+    }
+
+    /**
+     * 创建示例面板
+     */
+    private fun createExamplePanel(): JPanel {
+        return JPanel().apply {
+            layout = BorderLayout(5, 5)
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Example Format"),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+            )
+
+            val exampleLabel = JLabel("<html>" +
+                "<b>Input format:</b><br/>" +
+                "name1${itemSeparatorField.text}value1${nameSeparatorField.text}name2${itemSeparatorField.text}value2<br/><br/>" +
+                "<b>Example:</b><br/>" +
+                "温度:25.5,湿度:60.2" +
+                "</html>").apply {
+                font = Font("Dialog", Font.PLAIN, 12)
+            }
+
+            add(exampleLabel, BorderLayout.CENTER)
+        }
     }
 
     private fun applySettings() {
