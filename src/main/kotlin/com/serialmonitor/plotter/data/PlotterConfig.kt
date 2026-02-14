@@ -11,7 +11,9 @@ data class PlotterConfig(
     // 窗口显示点数（默认20）
     val windowSize: Int = 20,
     // 最大缓存点数（默认2000）
-    val maxCache: Int = 2000
+    val maxCache: Int = 2000,
+    // 平滑曲线（默认false）
+    val smoothLine: Boolean = false
 ) {
     /**
      * 验证配置的有效性

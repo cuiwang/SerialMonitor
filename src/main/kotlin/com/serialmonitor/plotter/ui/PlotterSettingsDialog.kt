@@ -17,11 +17,12 @@ class PlotterSettingsDialog(
     private val nameSeparatorField = JTextField(currentConfig.nameSeparator, 10)
     private val windowSizeField = JTextField(currentConfig.windowSize.toString(), 10)
     private val maxCacheField = JTextField(currentConfig.maxCache.toString(), 10)
+    private val smoothLineCheckBox = JCheckBox("Enable Smooth Line", currentConfig.smoothLine)
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
         setupUI()
-        setSize(450, 350)  // 增加对话框尺寸
+        setSize(450, 400)  // 增加高度以容纳新的复选框
         setLocationRelativeTo(parent)
     }
 
@@ -48,6 +49,10 @@ class PlotterSettingsDialog(
 
             // 最大缓存
             add(createLabeledField("Max Cache:", maxCacheField))
+            add(Box.createVerticalStrut(15))
+
+            // 平滑曲线复选框
+            add(createCheckBoxPanel("Smooth Line:", smoothLineCheckBox))
             add(Box.createVerticalStrut(20))
 
             // 说明信息
@@ -131,6 +136,33 @@ class PlotterSettingsDialog(
         }
     }
 
+    /**
+     * 创建带标签的复选框面板
+     */
+    private fun createCheckBoxPanel(labelText: String, checkBox: JCheckBox): JPanel {
+        return JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.X_AXIS)
+            alignmentX = Component.LEFT_ALIGNMENT
+
+            val label = JLabel(labelText).apply {
+                preferredSize = Dimension(180, 25)
+                minimumSize = Dimension(180, 25)
+                maximumSize = Dimension(180, 25)
+            }
+
+            checkBox.apply {
+                preferredSize = Dimension(200, 30)
+                minimumSize = Dimension(150, 30)
+                maximumSize = Dimension(300, 30)
+            }
+
+            add(label)
+            add(Box.createHorizontalStrut(10))
+            add(checkBox)
+            add(Box.createHorizontalGlue())
+        }
+    }
+
     private fun applySettings() {
         val itemSep = itemSeparatorField.text
         val nameSep = nameSeparatorField.text
@@ -178,7 +210,8 @@ class PlotterSettingsDialog(
             return
         }
 
-        val newConfig = PlotterConfig(itemSep, nameSep, windowSize, maxCache)
+        val smoothLine = smoothLineCheckBox.isSelected
+        val newConfig = PlotterConfig(itemSep, nameSep, windowSize, maxCache, smoothLine)
         onApply(newConfig)
         dispose()
     }
@@ -188,5 +221,6 @@ class PlotterSettingsDialog(
         nameSeparatorField.text = ":"
         windowSizeField.text = "20"
         maxCacheField.text = "2000"
+        smoothLineCheckBox.isSelected = false  // 默认不启用平滑曲线
     }
 }

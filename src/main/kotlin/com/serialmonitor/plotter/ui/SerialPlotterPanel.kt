@@ -260,13 +260,28 @@ class SerialPlotterPanel : JPanel() {
             // 添加可见的数据系列到图表
             for ((index, seriesName) in allSeriesNames.withIndex()) {
                 if (!isSeriesVisible(seriesName)) continue
-                val values = dataManager.getSeries(seriesName) ?: continue
-                val xData = (0 until values.size).map { it.toDouble() }
+                val originalValues = dataManager.getSeries(seriesName) ?: continue
+
+                // 根据配置决定是否平滑数据
+                val (xData, values) = if (dataManager.config.smoothLine && originalValues.size >= 3) {
+                    // 平滑模式：对数据进行插值处理
+                    smoothData(originalValues)
+                } else {
+                    // 正常模式：使用原始数据
+                    val xData = (0 until originalValues.size).map { it.toDouble() }
+                    Pair(xData, originalValues)
+                }
+
                 val color = colors[index % colors.size]
                 c.addSeries(seriesName, xData, values).apply {
                     lineWidth = this@SerialPlotterPanel.lineWidth
                     lineColor = color
-                    marker = SeriesMarkers.CIRCLE
+                    // 平滑模式下隐藏标记点
+                    if (dataManager.config.smoothLine) {
+                        marker = SeriesMarkers.NONE
+                    } else {
+                        marker = SeriesMarkers.CIRCLE
+                    }
                     markerColor = color
                 }
             }
@@ -413,6 +428,65 @@ class SerialPlotterPanel : JPanel() {
      * 获取图表对象
      */
     fun getChart(): XYChart? = chart
+
+    /**
+     * 对数据进行平滑插值处理
+     * 使用 Catmull-Rom 样条插值在数据点之间生成平滑的中间点
+     */
+    private fun smoothData(originalValues: List<Double>): Pair<List<Double>, List<Double>> {
+        if (originalValues.size < 3) {
+            // 数据点太少，直接返回原始数据
+            val xData = (0 until originalValues.size).map { it.toDouble() }
+            return Pair(xData, originalValues)
+        }
+
+        val smoothedX = mutableListOf<Double>()
+        val smoothedY = mutableListOf<Double>()
+
+        // 插值倍数：在每两个点之间插入多少个中间点
+        val interpolationFactor = 3
+
+        for (i in 0 until originalValues.size - 1) {
+            val x0 = i.toDouble()
+            val x1 = (i + 1).toDouble()
+            val y0 = originalValues[i]
+            val y1 = originalValues[i + 1]
+
+            // 获取控制点（用于 Catmull-Rom）
+            val y_prev = if (i > 0) originalValues[i - 1] else y0
+            val y_next = if (i < originalValues.size - 2) originalValues[i + 2] else y1
+
+            // 添加当前点
+            smoothedX.add(x0)
+            smoothedY.add(y0)
+
+            // 在两点之间插值
+            for (j in 1 until interpolationFactor) {
+                val t = j.toDouble() / interpolationFactor
+                val x = x0 + t * (x1 - x0)
+
+                // Catmull-Rom 样条插值公式
+                val t2 = t * t
+                val t3 = t2 * t
+
+                val y = 0.5 * (
+                    (2 * y0) +
+                    (-y_prev + y1) * t +
+                    (2 * y_prev - 5 * y0 + 4 * y1 - y_next) * t2 +
+                    (-y_prev + 3 * y0 - 3 * y1 + y_next) * t3
+                )
+
+                smoothedX.add(x)
+                smoothedY.add(y)
+            }
+        }
+
+        // 添加最后一个点
+        smoothedX.add((originalValues.size - 1).toDouble())
+        smoothedY.add(originalValues.last())
+
+        return Pair(smoothedX, smoothedY)
+    }
 
     override fun paintComponent(g: java.awt.Graphics?) {
         super.paintComponent(g)
