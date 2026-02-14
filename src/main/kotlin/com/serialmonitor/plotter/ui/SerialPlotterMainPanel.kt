@@ -20,6 +20,9 @@ class SerialPlotterMainPanel : JPanel(), SerialDataListener {
     // X轴滚动条
     private val xScrollBar = JScrollBar(JScrollBar.HORIZONTAL)
 
+    // 防止程序设置滚动条时触发用户操作监听器
+    private var isUpdatingScrollBarProgrammatically = false
+
     init {
         layout = BorderLayout()
 
@@ -60,10 +63,24 @@ class SerialPlotterMainPanel : JPanel(), SerialDataListener {
         xScrollBar.putClientProperty("JScrollBar.showButtons", true)
         
         xScrollBar.addAdjustmentListener { e ->
-            if (e.valueIsAdjusting) return@addAdjustmentListener
+            // 忽略正在调整的事件和程序设置的事件
+            if (e.valueIsAdjusting || isUpdatingScrollBarProgrammatically) {
+                return@addAdjustmentListener
+            }
+
             val window = plotterPanel.getWindowSize()
             val start = e.value
-            plotterPanel.setAutoScrollEnabled(false)
+            val count = plotterPanel.getDataPointCount()
+            val max = maxOf(0, count - window)
+
+            // 智能判断：如果用户滚动到最右端（±1容差），自动启用跟随模式
+            if (max > 0 && start >= max - 1) {
+                plotterPanel.setAutoScrollEnabled(true)
+            } else {
+                // 用户在其他位置查看历史数据，禁用自动跟随
+                plotterPanel.setAutoScrollEnabled(false)
+            }
+
             plotterPanel.setXAxisWindow(start.toDouble(), (start + window).toDouble())
         }
     }
@@ -84,7 +101,11 @@ class SerialPlotterMainPanel : JPanel(), SerialDataListener {
         } else {
             xScrollBar.value.coerceIn(0, max)
         }
+
+        // 使用标志位防止触发 AdjustmentListener
+        isUpdatingScrollBarProgrammatically = true
         xScrollBar.setValues(value, window, 0, max + window)
+        isUpdatingScrollBarProgrammatically = false
     }
 
     /**
@@ -109,6 +130,7 @@ class SerialPlotterMainPanel : JPanel(), SerialDataListener {
             add(JButton("Reset").apply {
                 addActionListener {
                     plotterPanel.resetView()
+                    plotterPanel.setAutoScrollEnabled(true)  // 确保启用自动滚动
                     updateScrollBar()
                 }
             })
