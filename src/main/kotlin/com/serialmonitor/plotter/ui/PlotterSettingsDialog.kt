@@ -16,13 +16,12 @@ class PlotterSettingsDialog(
     private val itemSeparatorField = JTextField(currentConfig.itemSeparator, 10)
     private val nameSeparatorField = JTextField(currentConfig.nameSeparator, 10)
     private val windowSizeField = JTextField(currentConfig.windowSize.toString(), 10)
-    private val maxCacheField = JTextField(currentConfig.maxCache.toString(), 10)
     private val smoothLineCheckBox = JCheckBox("Enable Smooth Line", currentConfig.smoothLine)
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
         setupUI()
-        setSize(450, 400)  // 增加高度以容纳新的复选框
+        setSize(450, 280)  // 增加高度确保所有内容可见
         setLocationRelativeTo(parent)
     }
 
@@ -47,16 +46,10 @@ class PlotterSettingsDialog(
             add(createLabeledField("Window Size:", windowSizeField))
             add(Box.createVerticalStrut(15))
 
-            // 最大缓存
-            add(createLabeledField("Max Cache:", maxCacheField))
-            add(Box.createVerticalStrut(15))
-
             // 平滑曲线复选框
             add(createCheckBoxPanel("Smooth Line:", smoothLineCheckBox))
-            add(Box.createVerticalStrut(20))
+            add(Box.createVerticalStrut(10))  // 添加间距
 
-            // 说明信息
-            add(createExamplePanel())
             add(Box.createVerticalGlue())  // 底部弹性空间
         }
 
@@ -112,31 +105,6 @@ class PlotterSettingsDialog(
     }
 
     /**
-     * 创建示例面板
-     */
-    private fun createExamplePanel(): JPanel {
-        return JPanel().apply {
-            layout = BorderLayout(5, 5)
-            alignmentX = Component.LEFT_ALIGNMENT
-            border = BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Example Format"),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)
-            )
-
-            val exampleLabel = JLabel("<html>" +
-                "<b>Input format:</b><br/>" +
-                "name1${itemSeparatorField.text}value1${nameSeparatorField.text}name2${itemSeparatorField.text}value2<br/><br/>" +
-                "<b>Example:</b><br/>" +
-                "温度:25.5,湿度:60.2" +
-                "</html>").apply {
-                font = Font("Dialog", Font.PLAIN, 12)
-            }
-
-            add(exampleLabel, BorderLayout.CENTER)
-        }
-    }
-
-    /**
      * 创建带标签的复选框面板
      */
     private fun createCheckBoxPanel(labelText: String, checkBox: JCheckBox): JPanel {
@@ -167,7 +135,6 @@ class PlotterSettingsDialog(
         val itemSep = itemSeparatorField.text
         val nameSep = nameSeparatorField.text
         val windowSize = windowSizeField.text.toIntOrNull()
-        val maxCache = maxCacheField.text.toIntOrNull()
 
         // 验证
         if (itemSep.isEmpty() || nameSep.isEmpty()) {
@@ -200,18 +167,8 @@ class PlotterSettingsDialog(
             return
         }
 
-        if (maxCache == null || maxCache < 100) {
-            JOptionPane.showMessageDialog(
-                this,
-                "Max cache must be >= 100!",
-                "Invalid Configuration",
-                JOptionPane.WARNING_MESSAGE
-            )
-            return
-        }
-
         val smoothLine = smoothLineCheckBox.isSelected
-        val newConfig = PlotterConfig(itemSep, nameSep, windowSize, maxCache, smoothLine)
+        val newConfig = PlotterConfig(itemSep, nameSep, windowSize, smoothLine)
         onApply(newConfig)
         dispose()
     }
@@ -220,7 +177,6 @@ class PlotterSettingsDialog(
         itemSeparatorField.text = ","
         nameSeparatorField.text = ":"
         windowSizeField.text = "20"
-        maxCacheField.text = "2000"
         smoothLineCheckBox.isSelected = false  // 默认不启用平滑曲线
     }
 }

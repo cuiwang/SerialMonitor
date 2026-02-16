@@ -10,11 +10,12 @@ data class PlotterConfig(
     val nameSeparator: String = ":",
     // 窗口显示点数（默认20）
     val windowSize: Int = 20,
-    // 最大缓存点数（默认2000）
-    val maxCache: Int = 2000,
     // 平滑曲线（默认false）
     val smoothLine: Boolean = false
 ) {
+    // 最大缓存点数（固定为5000，足够大且不会拖垮应用）
+    val maxCache: Int = 5000
+
     /**
      * 验证配置的有效性
      */
@@ -22,8 +23,7 @@ data class PlotterConfig(
         return itemSeparator.isNotEmpty() &&
                nameSeparator.isNotEmpty() &&
                itemSeparator != nameSeparator &&
-               windowSize >= 10 &&
-               maxCache >= 100
+               windowSize >= 10
     }
 }
 
