@@ -17,6 +17,7 @@ class SerialPortManager {
     private var currentState = SerialPortState.DISCONNECTED
     private var readThread: Thread? = null
     private var shouldKeepReading = false
+    private var isPaused = false  // 暂停状态标志
 
     private val listeners = CopyOnWriteArrayList<SerialDataListener>()
 
@@ -135,6 +136,28 @@ class SerialPortManager {
     }
 
     /**
+     * 暂停接收数据
+     */
+    fun pause() {
+        isPaused = true
+    }
+
+    /**
+     * 恢复接收数据
+     */
+    fun resume() {
+        isPaused = false
+    }
+
+    /**
+     * 检查是否暂停
+     */
+    fun isPaused(): Boolean {
+        return isPaused
+    }
+
+
+    /**
      * 启动读取线程
      */
     private fun startReadThread() {
@@ -173,7 +196,10 @@ class SerialPortManager {
     }
 
     private fun notifyDataReceived(data: String) {
-        listeners.forEach { it.onDataReceived(data) }
+        // 暂停时不通知监听器
+        if (!isPaused) {
+            listeners.forEach { it.onDataReceived(data) }
+        }
     }
 
     private fun notifyError(message: String) {

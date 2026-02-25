@@ -1,31 +1,96 @@
 <idea-plugin>
-    <id>com.serialmonitor.clion</id>
+    <id>com.serialmonitor.cuiwang</id>
     <name>Serial Monitor</name>
-    <vendor email="dev@example.com" url="https://github.com/yourusername/CLion-SerialMonitor">Serial Monitor</vendor>
+    <vendor email="1991.cuiwang@gmail.com" url="https://github.com/cuiwang/SerialMonitor">Serial Monitor</vendor>
 
     <description><![CDATA[
-        A powerful Serial Port Monitor for CLion IDE.
-        Features:
+        <h2>A powerful Serial Port Monitor with real-time data visualization for JetBrains IDEs.</h2>
+
+        <p>Perfect for Arduino, ESP32, embedded systems, and IoT development. Monitor serial communication and visualize data in real-time with beautiful charts.</p>
+
+        <h3>Monitor Tab Features:</h3>
         <ul>
-            <li>Real-time serial port monitoring</li>
-            <li>Automatic port detection</li>
-            <li>Configurable baud rates</li>
-            <li>Send data to serial port</li>
-            <li>Auto-scroll and clear output</li>
+            <li><b>Real-time Serial Communication</b> - Monitor data from serial ports instantly</li>
+            <li><b>Auto Port Detection</b> - Automatically detect available serial ports</li>
+            <li><b>Flexible Baud Rates</b> - Support for 9600 to 921600 baud</li>
+            <li><b>Bi-directional Communication</b> - Send and receive data</li>
+            <li><b>Advanced Filtering</b> - Normal text search and regular expression filtering</li>
+            <li><b>Auto-scroll and Clear</b> - Convenient log management</li>
+            <li><b>Copy to Clipboard</b> - Easy log export</li>
+        </ul>
+
+        <h3>Plotter Tab Features:</h3>
+        <ul>
+            <li><b>Real-time Data Visualization</b> - Plot numerical data as it arrives</li>
+            <li><b>Multiple Data Series</b> - Display multiple channels simultaneously</li>
+            <li><b>Smooth Curves</b> - Optional smooth line rendering with spline interpolation</li>
+            <li><b>Scrolling Window</b> - ECG-style auto-scrolling display</li>
+            <li><b>Interactive Controls</b> - Zoom, pan, and manual scrolling</li>
+            <li><b>Configurable Format</b> - Custom data separators and window size</li>
+            <li><b>Legend Management</b> - Toggle visibility of individual series</li>
+        </ul>
+
+        <h3>Use Cases:</h3>
+        <ul>
+            <li>Arduino and ESP32 development</li>
+            <li>Embedded systems debugging</li>
+            <li>IoT device communication</li>
+            <li>Sensor data monitoring and visualization</li>
         </ul>
     ]]></description>
 
     <change-notes><![CDATA[
-        <b>1.0.0</b>
+        <h3>Version 1.1.0 - Enhanced Monitoring (2026-02-25)</h3>
         <ul>
-            <li>Initial release</li>
-            <li>Serial port monitoring</li>
-            <li>Port detection and baud rate configuration</li>
+            <li>Added Pause/Resume button to pause data reception and output</li>
+            <li>Added timestamp display option in Monitor tab (HH:mm:ss.SSS format)</li>
+            <li>Timestamps are only shown in UI, not affecting data parsing for Plotter</li>
+            <li>Improved UI controls and data management</li>
+        </ul>
+
+        <h3>Version 1.0.1 - Compatibility Fix (2026-02-16)</h3>
+        <ul>
+            <li>Fixed IDE compatibility configuration to support CLion 261 and latest versions</li>
+            <li>Updated until-build version to 261.*</li>
+        </ul>
+
+        <h3>Version 1.0.0 - Initial Release (2026-02-16)</h3>
+
+        <h4>Monitor Tab</h4>
+        <ul>
+            <li>Real-time serial port monitoring with multiple baud rates</li>
+            <li>Automatic port detection and refresh</li>
+            <li>Send data to serial port</li>
+            <li>Advanced log filtering (normal text and regex)</li>
+            <li>Auto-scroll, clear, and copy functions</li>
+        </ul>
+
+        <h4>Plotter Tab</h4>
+        <ul>
+            <li>Real-time data visualization with XChart</li>
+            <li>Multiple data series support</li>
+            <li>Smooth curve rendering with Catmull-Rom spline</li>
+            <li>Scrolling window with configurable size</li>
+            <li>Interactive zoom and pan controls</li>
+            <li>Intelligent auto-scroll behavior</li>
+            <li>Configurable data format and display options</li>
+            <li>Legend panel with series visibility toggle</li>
+        </ul>
+
+        <h4>Technical</h4>
+        <ul>
+            <li>Built with Kotlin 1.9.21</li>
+            <li>jSerialComm 2.8+ for cross-platform serial communication</li>
+            <li>XChart 3.8.7 for high-performance charting</li>
+            <li>Compatible with JetBrains IDEs 2024.1+</li>
         </ul>
     ]]></change-notes>
 
     <!-- Product and plugin compatibility -->
-    <idea-version since-build="241" until-build="241.*"/>
+    <idea-version since-build="241" until-build="261.*"/>
+
+    <!-- Plugin dependencies - required for all JetBrains IDEs -->
+    <depends>com.intellij.modules.platform</depends>
 
     <!-- Declare plugin extensions -->
     <extensions defaultExtensionNs="com.intellij">

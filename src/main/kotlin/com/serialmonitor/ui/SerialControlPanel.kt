@@ -18,6 +18,10 @@ class SerialControlPanel(private val portManager: SerialPortManager) : JPanel() 
     private val connectButton = JButton("Connect").apply {
         icon = AllIcons.Actions.Execute
     }
+    private val pauseButton = JButton("Pause").apply {
+        icon = AllIcons.Actions.Pause
+        isEnabled = false
+    }
     private val refreshButton = JButton("Refresh").apply {
         icon = AllIcons.Actions.Refresh
     }
@@ -91,11 +95,29 @@ class SerialControlPanel(private val portManager: SerialPortManager) : JPanel() 
             insets = Insets(5, 5, 5, 5)
         })
 
+        // 暂停按钮
+        pauseButton.addActionListener {
+            if (portManager.isPaused()) {
+                portManager.resume()
+                pauseButton.text = "Pause"
+                pauseButton.icon = AllIcons.Actions.Pause
+            } else {
+                portManager.pause()
+                pauseButton.text = "Resume"
+                pauseButton.icon = AllIcons.Actions.Resume
+            }
+        }
+        add(pauseButton, GridBagConstraints().apply {
+            gridx = 6
+            gridy = 0
+            insets = Insets(5, 5, 5, 5)
+        })
+
         // 发送面板
         add(createSendPanel(), GridBagConstraints().apply {
             gridx = 0
             gridy = 1
-            gridwidth = 6
+            gridwidth = 7
             insets = Insets(5, 5, 5, 5)
             fill = GridBagConstraints.HORIZONTAL
             weightx = 1.0
@@ -168,6 +190,9 @@ class SerialControlPanel(private val portManager: SerialPortManager) : JPanel() 
             isConnected = true
             connectButton.text = "Disconnect"
             connectButton.icon = AllIcons.Actions.Pause
+            pauseButton.isEnabled = true
+            pauseButton.text = "Pause"
+            pauseButton.icon = AllIcons.Actions.Pause
             portComboBox.isEnabled = false
             baudRateComboBox.isEnabled = false
             refreshButton.isEnabled = false
@@ -178,9 +203,13 @@ class SerialControlPanel(private val portManager: SerialPortManager) : JPanel() 
 
     private fun disconnect() {
         portManager.disconnect()
+        portManager.resume()  // 确保恢复状态
         isConnected = false
         connectButton.text = "Connect"
         connectButton.icon = AllIcons.Actions.Execute
+        pauseButton.isEnabled = false
+        pauseButton.text = "Pause"
+        pauseButton.icon = AllIcons.Actions.Pause
         portComboBox.isEnabled = true
         baudRateComboBox.isEnabled = true
         refreshButton.isEnabled = true
@@ -193,6 +222,9 @@ class SerialControlPanel(private val portManager: SerialPortManager) : JPanel() 
                     isConnected = true
                     connectButton.text = "Disconnect"
                     connectButton.icon = AllIcons.Actions.Pause
+                    pauseButton.isEnabled = true
+                    pauseButton.text = "Pause"
+                    pauseButton.icon = AllIcons.Actions.Pause
                     portComboBox.isEnabled = false
                     baudRateComboBox.isEnabled = false
                     refreshButton.isEnabled = false
@@ -201,6 +233,9 @@ class SerialControlPanel(private val portManager: SerialPortManager) : JPanel() 
                     isConnected = false
                     connectButton.text = "Connect"
                     connectButton.icon = AllIcons.Actions.Execute
+                    pauseButton.isEnabled = false
+                    pauseButton.text = "Pause"
+                    pauseButton.icon = AllIcons.Actions.Pause
                     portComboBox.isEnabled = true
                     baudRateComboBox.isEnabled = true
                     refreshButton.isEnabled = true
@@ -209,6 +244,9 @@ class SerialControlPanel(private val portManager: SerialPortManager) : JPanel() 
                     isConnected = false
                     connectButton.text = "Connect"
                     connectButton.icon = AllIcons.Actions.Execute
+                    pauseButton.isEnabled = false
+                    pauseButton.text = "Pause"
+                    pauseButton.icon = AllIcons.Actions.Pause
                     portComboBox.isEnabled = true
                     baudRateComboBox.isEnabled = true
                     refreshButton.isEnabled = true

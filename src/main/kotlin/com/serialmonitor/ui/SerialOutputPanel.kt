@@ -35,6 +35,10 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
     private var isRegexFilter = false  // 是否使用正则表达式过滤
     private var liveFilter = false  // 是否启用实时过滤
 
+    // 时间戳功能相关
+    private var showTimestamp = false  // 是否显示时间戳
+    private val allReceivedDataWithTimestamp = StringBuilder()  // 带时间戳的数据
+
     init {
         layout = BorderLayout()
         add(createFilterPanel(), BorderLayout.NORTH)  // 过滤面板在顶部
@@ -100,6 +104,25 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
                 }
             }
             add(liveFilterCheckbox)
+
+            add(JSeparator(SwingConstants.VERTICAL).apply {
+                preferredSize = Dimension(1, 20)
+            })
+
+            // 显示时间戳复选框
+            val timestampCheckbox = JCheckBox("Timestamp", false).apply {
+                toolTipText = "Show timestamp (HH:mm:ss.SSS) for each log entry"
+                addActionListener {
+                    showTimestamp = isSelected
+                    // 重新应用过滤以更新显示
+                    if (filterText.isNotEmpty()) {
+                        applyFilter(filterText)
+                    } else {
+                        applyFilter("")
+                    }
+                }
+            }
+            add(timestampCheckbox)
 
             // 为实时过滤添加文档监听器
             filterField.document.addDocumentListener(object : javax.swing.event.DocumentListener {
@@ -167,6 +190,7 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
     fun clearOutput() {
         outputArea.text = ""
         allReceivedData.clear()
+        allReceivedDataWithTimestamp.clear()
     }
 
     /**
@@ -174,13 +198,26 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
      */
     private fun applyFilter(filter: String) {
         SwingUtilities.invokeLater {
+            // 使用原始数据（不带时间戳）进行过滤
+            val baseText = allReceivedData.toString()
+
             if (filter.isEmpty()) {
                 // 无过滤，显示所有数据
-                outputArea.text = allReceivedData.toString()
+                val displayText = if (showTimestamp) {
+                    addTimestampToLines(baseText)
+                } else {
+                    baseText
+                }
+                outputArea.text = displayText
             } else {
                 // 应用过滤
-                val filteredText = filterLines(allReceivedData.toString(), filter)
-                outputArea.text = filteredText
+                val filteredText = filterLines(baseText, filter)
+                val displayText = if (showTimestamp) {
+                    addTimestampToLines(filteredText)
+                } else {
+                    filteredText
+                }
+                outputArea.text = displayText
             }
 
             // 保持自动滚动
@@ -215,16 +252,25 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
 
     override fun onDataReceived(data: String) {
         SwingUtilities.invokeLater {
-            // 保存到原始数据缓存
+            // 保存到原始数据缓存（不带时间戳，用于绘图仪解析）
             allReceivedData.append(data)
+
+            // 如果显示时间戳，保存带时间戳的版本用于显示
+            if (showTimestamp) {
+                allReceivedDataWithTimestamp.append(addTimestampToText(data))
+            }
 
             // 如果有过滤条件，应用过滤
             if (filterText.isNotEmpty()) {
-                // 重新应用过滤到所有数据
                 applyFilter(filterText)
             } else {
                 // 无过滤，直接追加显示
-                outputArea.append(data)
+                val displayText = if (showTimestamp) {
+                    addTimestampToText(data)
+                } else {
+                    data
+                }
+                outputArea.append(displayText)
                 if (autoScroll) {
                     outputArea.caretPosition = outputArea.document.length
                 }
@@ -241,14 +287,25 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
                 SerialPortState.ERROR -> "=== Error ===\n"
             }
 
-            // 保存到原始数据缓存
+            // 保存到原始数据缓存（不带时间戳）
             allReceivedData.append(message)
+
+            // 如果显示时间戳，保存带时间戳的版本
+            if (showTimestamp) {
+                allReceivedDataWithTimestamp.append(addTimestampToText(message))
+            }
 
             // 如果有过滤条件，应用过滤
             if (filterText.isNotEmpty()) {
                 applyFilter(filterText)
             } else {
-                outputArea.append(message)
+                // 无过滤，直接追加显示
+                val displayText = if (showTimestamp) {
+                    addTimestampToText(message)
+                } else {
+                    message
+                }
+                outputArea.append(displayText)
                 if (autoScroll) {
                     outputArea.caretPosition = outputArea.document.length
                 }
@@ -260,14 +317,25 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
         SwingUtilities.invokeLater {
             val message = "ERROR: $errorMessage\n"
 
-            // 保存到原始数据缓存
+            // 保存到原始数据缓存（不带时间戳）
             allReceivedData.append(message)
+
+            // 如果显示时间戳，保存带时间戳的版本
+            if (showTimestamp) {
+                allReceivedDataWithTimestamp.append(addTimestampToText(message))
+            }
 
             // 如果有过滤条件，应用过滤
             if (filterText.isNotEmpty()) {
                 applyFilter(filterText)
             } else {
-                outputArea.append(message)
+                // 无过滤，直接追加显示
+                val displayText = if (showTimestamp) {
+                    addTimestampToText(message)
+                } else {
+                    message
+                }
+                outputArea.append(displayText)
                 if (autoScroll) {
                     outputArea.caretPosition = outputArea.document.length
                 }
@@ -276,6 +344,48 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
     }
 
     fun getText(): String = outputArea.text
+
+    /**
+     * 获取当前时间戳格式 HH:mm:ss.SSS
+     */
+    private fun getCurrentTimestamp(): String {
+        val sdf = java.text.SimpleDateFormat("HH:mm:ss.SSS")
+        return sdf.format(java.util.Date())
+    }
+
+    /**
+     * 为文本添加时间戳前缀
+     */
+    private fun addTimestampToText(text: String): String {
+        if (!showTimestamp) return text
+
+        val lines = text.split("\n")
+        val timestamp = getCurrentTimestamp()
+        return lines.joinToString("\n") { line ->
+            if (line.isNotEmpty()) {
+                "[$timestamp] $line"
+            } else {
+                line
+            }
+        }
+    }
+
+    /**
+     * 为多行文本的每一行添加时间戳（仅用于显示时使用同一时间戳）
+     */
+    private fun addTimestampToLines(text: String): String {
+        if (!showTimestamp) return text
+
+        val lines = text.split("\n")
+        val timestamp = getCurrentTimestamp()
+        return lines.joinToString("\n") { line ->
+            if (line.isNotEmpty()) {
+                "[$timestamp] $line"
+            } else {
+                line
+            }
+        }
+    }
 }
 
 
