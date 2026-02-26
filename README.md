@@ -2,7 +2,7 @@
 
 A powerful Serial Port Monitor plugin for JetBrains IDEs (CLion, IntelliJ IDEA, PyCharm, etc.).
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
@@ -198,4 +198,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **⭐ If you find this plugin useful, please star the repository!**
-

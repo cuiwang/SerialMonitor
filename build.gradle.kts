@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.serialmonitor"
-version = "1.1.0"
+version = "1.2.0"
 
 repositories {
     mavenCentral()
@@ -49,7 +49,7 @@ tasks {
 
     // Patch plugin.xml
     patchPluginXml {
-        version.set("1.0.1")
+        version.set("1.2.0")
         sinceBuild.set("241")
         untilBuild.set("261.*") // 支持到最新的CLion 261版本
     }
@@ -59,14 +59,3 @@ tasks {
         enabled = true
     }
 }
-
-
-
-
-
-
-
-
-
-
-

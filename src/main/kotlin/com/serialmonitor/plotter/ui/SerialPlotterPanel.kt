@@ -15,6 +15,7 @@ import java.util.concurrent.CopyOnWriteArraySet
 import javax.swing.JLabel
 import javax.swing.JPopupMenu
 import org.knowm.xchart.style.markers.SeriesMarkers
+import javax.swing.UIManager
 
 /**
  * 串口绘图仪面板
@@ -50,8 +51,8 @@ class SerialPlotterPanel : JPanel() {
     private var yAxisMax = 100.0
     private var autoScroll = true  // 自动滚动标志
     private var windowSize = 200
-    private val lineWidth = 2.0f
-    private val markerSize = 6
+    private val lineWidth = 2.5f  // 增加到 2.5 for 现代化设计
+    private val markerSize = 7    // 增加到 7 for 更好的可见性
 
     // 视口变化回调（供X轴滚动条同步）
     var onViewportChanged: (() -> Unit)? = null
@@ -76,7 +77,29 @@ class SerialPlotterPanel : JPanel() {
     }
 
     /**
-     * 初始化图表
+     * 检测并应用主题 - 支持动态主题切换
+     */
+    fun applyTheme() {
+        initChart()
+        updateChart()
+    }
+
+    /**
+     * 判断是否使用暗色主题
+     */
+    private fun isDarkTheme(): Boolean {
+        val bgColor = UIManager.getColor("Panel.background")
+        return if (bgColor != null) {
+            // 计算亮度：如果背景色比较暗，则为暗色主题
+            val brightness = (bgColor.red + bgColor.green + bgColor.blue) / 3
+            brightness < 128
+        } else {
+            false
+        }
+    }
+
+    /**
+     * 初始化图表 - 支持暗色主题的现代化设计
      */
     private fun initChart() {
         chart = XYChartBuilder()
@@ -85,10 +108,35 @@ class SerialPlotterPanel : JPanel() {
             .build()
 
         chart?.let { c ->
+            val isDark = isDarkTheme()
+
             c.styler.apply {
-                legendFont = java.awt.Font("Arial", java.awt.Font.PLAIN, 10)
+                // 背景色自适应主题
+                chartBackgroundColor = if (isDark) Color(30, 30, 30) else Color(255, 255, 255)
+                plotBackgroundColor = if (isDark) Color(40, 40, 40) else Color(250, 250, 250)
+
+                // 网格线样式 - 现代化设计
                 isPlotGridLinesVisible = true
+                plotGridLinesStroke = BasicStroke(0.5f)
+                plotGridLinesColor = if (isDark) Color(60, 60, 60) else Color(220, 220, 220)
+
+                // 轴线颜色
+                axisTickLabelsColor = if (isDark) Color(180, 180, 180) else Color(80, 80, 80)
+                axisTickMarksColor = if (isDark) Color(100, 100, 100) else Color(180, 180, 180)
+
+                // 轴标签字体：改成 10px 使其更精致小巧
+                axisTickLabelsFont = java.awt.Font("Monospaced", java.awt.Font.PLAIN, 10)
+
+                // 字体配置 - 使用默认字体但增加大小
+                legendFont = java.awt.Font("Monospaced", java.awt.Font.PLAIN, 11)
+                axisTitleFont = java.awt.Font("Monospaced", java.awt.Font.BOLD, 12)
                 isLegendVisible = false  // 禁用内置图例，使用自定义图例
+
+                // 图表边框
+                isPlotBorderVisible = true
+                plotBorderColor = if (isDark) Color(80, 80, 80) else Color(200, 200, 200)
+
+                // 标记点配置
                 markerSize = this@SerialPlotterPanel.markerSize
             }
         }
@@ -268,23 +316,27 @@ class SerialPlotterPanel : JPanel() {
                     smoothData(originalValues)
                 } else {
                     // 正常模式：使用原始数据
-                    val xData = (0 until originalValues.size).map { it.toDouble() }
-                    Pair(xData, originalValues)
+                    val xDataList = (0 until originalValues.size).map { it.toDouble() }
+                    Pair(xDataList, originalValues)
                 }
 
                 val color = colors[index % colors.size]
+                val isDark = isDarkTheme()
+
                 c.addSeries(seriesName, xData, values).apply {
-                    lineWidth = this@SerialPlotterPanel.lineWidth
+                    // 现代化线条样式 - 更粗更清晰
+                    lineWidth = this@SerialPlotterPanel.lineWidth + 0.5f  // 增加0.5个像素宽度
                     lineColor = color
-                    // 平滑模式下隐藏标记点
+
+                    // 标记点优化
                     if (dataManager.config.smoothLine) {
-                        marker = SeriesMarkers.NONE
+                        marker = SeriesMarkers.NONE  // 平滑模式隐藏标记
                     } else {
                         marker = SeriesMarkers.CIRCLE
                     }
+
                     markerColor = color
                 }
-            }
             }
 
             // 自动调整Y轴范围

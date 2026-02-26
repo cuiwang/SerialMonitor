@@ -12,7 +12,7 @@ class SerialMonitorToolWindowFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val serialMonitorPanel = SerialMonitorPanel()
-        val contentFactory = ContentFactory.SERVICE.getInstance()
+        val contentFactory = ContentFactory.getInstance()
         val content = contentFactory.createContent(serialMonitorPanel, "", false)
         toolWindow.contentManager.addContent(content)
     }

@@ -5,14 +5,17 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import com.serialmonitor.data.SerialDataListener
 import com.serialmonitor.data.SerialPortState
+import com.serialmonitor.serial.SerialPortManager
 import java.awt.*
 import java.awt.datatransfer.StringSelection
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
 import javax.swing.*
 
 /**
- * 串口输出面板 - 显示接收到的数据
+ * 串口输出面板 - 显示接收到的数据 + 发送输入框
  */
-class SerialOutputPanel : JPanel(), SerialDataListener {
+class SerialOutputPanel(private val portManager: SerialPortManager? = null) : JPanel(), SerialDataListener {
 
     private val outputArea = JTextArea().apply {
         isEditable = false
@@ -42,8 +45,16 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
     init {
         layout = BorderLayout()
         add(createFilterPanel(), BorderLayout.NORTH)  // 过滤面板在顶部
-        add(scrollPane, BorderLayout.CENTER)
-        add(createBottomPanel(), BorderLayout.SOUTH)
+        add(scrollPane, BorderLayout.CENTER)           // 日志区域在中间
+
+        // 底部面板：自动滚动 + 发送面板
+        val bottomPanel = JPanel(BorderLayout()).apply {
+            add(createBottomPanel(), BorderLayout.NORTH)   // 自动滚动、时间戳等选项
+            if (portManager != null) {
+                add(createSendPanel(), BorderLayout.SOUTH)  // 发送面板在最下面
+            }
+        }
+        add(bottomPanel, BorderLayout.SOUTH)
     }
 
     /**
@@ -184,6 +195,53 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
                 }
             }
             add(copyButton)
+        }
+    }
+
+    /**
+     * 创建发送面板 - 聊天式布局
+     */
+    private fun createSendPanel(): JPanel {
+        return JPanel(BorderLayout(5, 5)).apply {
+            background = JBColor.background()
+            border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+
+            val sendInput = JTextField().apply {
+                font = Font("Courier New", Font.PLAIN, 12)
+                toolTipText = "Enter message and press Enter to send"
+            }
+
+            val sendButton = JButton("Send").apply {
+                icon = AllIcons.Actions.Forward
+                addActionListener {
+                    sendMessage(sendInput)
+                }
+            }
+
+            // 添加回车快捷键
+            sendInput.addKeyListener(object : KeyListener {
+                override fun keyTyped(e: KeyEvent) {}
+                override fun keyPressed(e: KeyEvent) {
+                    if (e.keyCode == KeyEvent.VK_ENTER) {
+                        sendMessage(sendInput)
+                    }
+                }
+                override fun keyReleased(e: KeyEvent) {}
+            })
+
+            add(sendInput, BorderLayout.CENTER)
+            add(sendButton, BorderLayout.EAST)
+        }
+    }
+
+    /**
+     * 发送消息辅助方法
+     */
+    private fun sendMessage(sendInput: JTextField) {
+        val text = sendInput.text
+        if (text.isNotEmpty() && portManager != null) {
+            portManager.sendDataWithNewline(text)
+            sendInput.text = ""
         }
     }
 
@@ -387,8 +445,3 @@ class SerialOutputPanel : JPanel(), SerialDataListener {
         }
     }
 }
-
-
-
-
-

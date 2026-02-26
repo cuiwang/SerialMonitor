@@ -1,5 +1,6 @@
 package com.serialmonitor.settings
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -30,7 +31,7 @@ class SerialMonitorSettings : PersistentStateComponent<SerialMonitorSettings> {
 
     companion object {
         fun getInstance(): SerialMonitorSettings {
-            return com.intellij.openapi.components.ServiceManager.getService(SerialMonitorSettings::class.java)
+            return ApplicationManager.getApplication().getService(SerialMonitorSettings::class.java)
         }
     }
 }

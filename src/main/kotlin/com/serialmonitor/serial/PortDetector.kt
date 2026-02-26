@@ -26,7 +26,8 @@ object PortDetector {
     private fun getWindowsPorts(): List<String> {
         val ports = mutableListOf<String>()
         try {
-            val process = Runtime.getRuntime().exec("powershell -Command \"Get-WmiObject Win32_SerialPort | Select-Object Name\"")
+            val command = arrayOf("powershell", "-Command", "Get-WmiObject Win32_SerialPort | Select-Object Name")
+            val process = Runtime.getRuntime().exec(command)
             process.inputStream.bufferedReader().forEachLine { line ->
                 if (line.matches(Regex("COM\\d+"))) {
                     ports.add(line.trim())

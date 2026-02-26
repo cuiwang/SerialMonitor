@@ -2,6 +2,8 @@ package com.serialmonitor.plotter.ui
 
 import com.serialmonitor.data.SerialDataListener
 import com.serialmonitor.data.SerialPortState
+import com.serialmonitor.serial.SerialPortManager
+import com.intellij.icons.AllIcons
 import javax.swing.*
 import java.awt.*
 
@@ -9,7 +11,7 @@ import java.awt.*
  * 串口绘图仪主面板
  * 集成绘图面板、图例和工具栏
  */
-class SerialPlotterMainPanel : JPanel(), SerialDataListener {
+class SerialPlotterMainPanel(private val portManager: SerialPortManager? = null) : JPanel(), SerialDataListener {
 
     private val plotterPanel = SerialPlotterPanel()
     private val legendPanel = PlotterLegendPanel(plotterPanel)
@@ -20,17 +22,25 @@ class SerialPlotterMainPanel : JPanel(), SerialDataListener {
     // X轴滚动条
     private val xScrollBar = JScrollBar(JScrollBar.HORIZONTAL)
 
+    // 暂停按钮引用，用于更新状态
+    private var pauseButton: JButton? = null
+
     // 防止程序设置滚动条时触发用户操作监听器
     private var isUpdatingScrollBarProgrammatically = false
 
     init {
-        layout = BorderLayout()
+        layout = BorderLayout(0, 0)  // 移除间距，自己控制
+
+        // 设置绘图面板的最小尺寸，确保曲线图有足够的显示空间
+        preferredSize = Dimension(1000, 1200)  // 增加到 1200 (从 700)
+        minimumSize = Dimension(800, 700)      // 最小增加到 700
 
         // 创建工具栏
         val toolBar = createToolBar()
 
         // 顶部面板：工具栏 + 图例
-        val topPanel = JPanel(BorderLayout()).apply {
+        val topPanel = JPanel(BorderLayout(0, 3)).apply {  // 设置 3px 垂直间距
+            border = BorderFactory.createEmptyBorder(0, 0, 4, 0)  // 下边距 4px
             // 工具栏在最上方
             add(toolBar, BorderLayout.NORTH)
             // 图例在工具栏下方
@@ -126,6 +136,27 @@ class SerialPlotterMainPanel : JPanel(), SerialDataListener {
 
             addSeparator()
 
+            // 暂停/恢复按钮 (仅当有 portManager 时显示)
+            if (portManager != null) {
+                pauseButton = JButton("Pause").apply {
+                    icon = AllIcons.Actions.Pause
+                    isEnabled = false  // 默认禁用，连接后启用
+                    addActionListener {
+                        if (portManager.isPaused()) {
+                            portManager.resume()
+                            text = "Pause"
+                            icon = AllIcons.Actions.Pause
+                        } else {
+                            portManager.pause()
+                            text = "Resume"
+                            icon = AllIcons.Actions.Resume
+                        }
+                    }
+                }
+                add(pauseButton!!)
+                addSeparator()
+            }
+
             // 重置视图按钮
             add(JButton("Reset").apply {
                 addActionListener {
@@ -182,15 +213,24 @@ class SerialPlotterMainPanel : JPanel(), SerialDataListener {
                 // 连接时清除旧数据
                 plotterPanel.clearData()
                 legendPanel.clearLegend()
+                // 启用暂停按钮
+                pauseButton?.isEnabled = true
+                pauseButton?.text = "Pause"
+                pauseButton?.icon = AllIcons.Actions.Pause
             }
             SerialPortState.DISCONNECTED -> {
-                // 断开连接时不做特殊处理
+                // 断开连接时禁用暂停按钮并恢复状态
+                pauseButton?.isEnabled = false
+                pauseButton?.text = "Pause"
+                pauseButton?.icon = AllIcons.Actions.Pause
+                portManager?.resume()  // 确保恢复状态
             }
             SerialPortState.CONNECTING -> {
                 // 连接中时不做特殊处理
             }
             SerialPortState.ERROR -> {
-                // 错误时显示提示
+                // 错误时禁用暂停按钮
+                pauseButton?.isEnabled = false
             }
         }
     }

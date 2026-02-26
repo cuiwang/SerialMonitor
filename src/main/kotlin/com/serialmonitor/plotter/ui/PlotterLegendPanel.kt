@@ -14,22 +14,68 @@ import java.awt.image.BufferedImage
 class PlotterLegendPanel(private val plotterPanel: SerialPlotterPanel) : JPanel() {
 
     private val legendItems = mutableMapOf<String, JPanel>()
+
+    // 科技色彩方案（与 SerialPlotterPanel 保持一致）
     private val colors = listOf(
-        Color(31, 119, 180),    // 蓝色
-        Color(255, 127, 14),    // 橙色
-        Color(44, 160, 44),     // 绿色
-        Color(214, 39, 40),     // 红色
-        Color(148, 103, 189),   // 紫色
-        Color(140, 86, 75),     // 棕色
-        Color(227, 119, 194),   // 粉红色
-        Color(127, 127, 127),   // 灰色
-        Color(188, 143, 143),   // 褐色
-        Color(23, 190, 207)     // 青色
+        Color(100, 200, 255),   // 科技蓝
+        Color(255, 165, 0),     // 科技橙
+        Color(80, 255, 100),    // 科技绿
+        Color(255, 100, 130),   // 科技红
+        Color(180, 120, 255),   // 科技紫
+        Color(255, 200, 100),   // 科技金黄
+        Color(255, 130, 200),   // 科技粉
+        Color(100, 255, 200),   // 科技青
+        Color(255, 255, 100),   // 科技黄
+        Color(180, 255, 130)    // 科技浅绿
     )
 
     init {
-        layout = BorderLayout()
-        background = Color(240, 240, 240)
+        layout = BorderLayout(0, 0)
+        background = getBackgroundColor()
+        // 增加上下边距使图例垂直居中，去掉下方的横线
+        border = BorderFactory.createEmptyBorder(8, 0, 0, 0)  // 上边距 8px，下边距 0
+    }
+
+    /**
+     * 判断是否为暗色主题
+     */
+    private fun isDarkTheme(): Boolean {
+        val bgColor = UIManager.getColor("Panel.background")
+        return if (bgColor != null) {
+            val brightness = (bgColor.red + bgColor.green + bgColor.blue) / 3
+            brightness < 128
+        } else {
+            false
+        }
+    }
+
+    /**
+     * 获取背景色
+     */
+    private fun getBackgroundColor(): Color {
+        return if (isDarkTheme()) Color(40, 40, 40) else Color(250, 250, 250)
+    }
+
+    /**
+     * 获取图例项背景色
+     */
+    private fun getItemBackgroundColor(isVisible: Boolean): Color {
+        return if (isDarkTheme()) {
+            if (isVisible) Color(50, 50, 50) else Color(45, 45, 45)
+        } else {
+            if (isVisible) Color.WHITE else Color(245, 245, 245)
+        }
+    }
+
+    /**
+     * 获取文本颜色
+     */
+    private fun getTextColor(isVisible: Boolean): Color {
+        return if (isDarkTheme()) {
+            if (isVisible) Color(200, 200, 200) else Color(120, 120, 120)
+        } else {
+            if (isVisible) Color.BLACK else Color.GRAY
+        }
     }
 
     /**
@@ -40,11 +86,12 @@ class PlotterLegendPanel(private val plotterPanel: SerialPlotterPanel) : JPanel(
         legendItems.clear()
 
         val seriesNames = plotterPanel.getSeriesNames()
+        val isDark = isDarkTheme()
 
         // 创建内部面板用于横向排列图例项
         val legendItemsPanel = JPanel().apply {
-            layout = FlowLayout(FlowLayout.LEFT, 10, 5)
-            background = Color(240, 240, 240)
+            layout = FlowLayout(FlowLayout.LEFT, 6, 0)  // 水平间距 6px，垂直间距 0
+            background = getBackgroundColor()
         }
 
         for ((index, seriesName) in seriesNames.withIndex()) {
@@ -53,27 +100,24 @@ class PlotterLegendPanel(private val plotterPanel: SerialPlotterPanel) : JPanel(
 
             // 创建图例项面板
             val itemPanel = JPanel().apply {
-                layout = FlowLayout(FlowLayout.LEFT, 5, 2)
-                background = Color.WHITE
-                border = LineBorder(if (isVisible) color else Color.LIGHT_GRAY, 1)
+                layout = FlowLayout(FlowLayout.LEFT, 3, 2)  // 紧凑布局
+                background = getItemBackgroundColor(isVisible)
+                // 去掉边框，只用内边距和背景色
+                border = BorderFactory.createEmptyBorder(2, 4, 2, 4)  // 内边距
                 cursor = Cursor(Cursor.HAND_CURSOR)
-
-                // 如果隐藏，则整体变半透明
-                if (!isVisible) {
-                    this.background = Color(245, 245, 245)
-                }
+                preferredSize = Dimension(110, 18)  // 调整到 18px 高度，宽度 110px
             }
 
             // 圆点图标
             val dotLabel = JLabel().apply {
                 icon = createDotIcon(color, isVisible)
-                preferredSize = Dimension(12, 12)
+                preferredSize = Dimension(10, 10)
             }
 
             // 系列名称
             val nameLabel = JLabel(seriesName).apply {
-                font = Font("Arial", Font.PLAIN, 11)
-                foreground = if (isVisible) Color.BLACK else Color.GRAY
+                font = Font("Monospaced", Font.PLAIN, 10)
+                foreground = getTextColor(isVisible)
             }
 
             // 组装图例项
@@ -87,13 +131,15 @@ class PlotterLegendPanel(private val plotterPanel: SerialPlotterPanel) : JPanel(
                 }
 
                 override fun mouseEntered(e: MouseEvent?) {
-                    itemPanel.background = if (plotterPanel.isSeriesVisible(seriesName))
-                        Color(230, 240, 255) else Color(235, 235, 235)
+                    itemPanel.background = if (plotterPanel.isSeriesVisible(seriesName)) {
+                        if (isDark) Color(65, 65, 65) else Color(235, 242, 255)
+                    } else {
+                        if (isDark) Color(50, 50, 50) else Color(240, 240, 240)
+                    }
                 }
 
                 override fun mouseExited(e: MouseEvent?) {
-                    itemPanel.background = if (plotterPanel.isSeriesVisible(seriesName))
-                        Color.WHITE else Color(245, 245, 245)
+                    itemPanel.background = getItemBackgroundColor(plotterPanel.isSeriesVisible(seriesName))
                 }
             }
 
@@ -110,9 +156,12 @@ class PlotterLegendPanel(private val plotterPanel: SerialPlotterPanel) : JPanel(
             horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
             verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_NEVER
             border = null
-            minimumSize = Dimension(100, 35)
-            preferredSize = Dimension(0, 35)  // 固定高度35px
-            maximumSize = Dimension(Integer.MAX_VALUE, 35)
+            minimumSize = Dimension(100, 22)
+            preferredSize = Dimension(0, 22)  // 调整到 22px (18px 图例项 + 2px 上下边距)
+            maximumSize = Dimension(Integer.MAX_VALUE, 22)
+            background = getBackgroundColor()
+            // 设置滚动面板背景
+            viewport.background = getBackgroundColor()
         }
 
         add(scrollPane, BorderLayout.CENTER)
@@ -217,13 +266,4 @@ class PlotterToolBar(
 /**
  * PlotterPanel需要暴露dataManager供工具栏访问
  */
-
-
-
-
-
-
-
-
-
 

@@ -25,7 +25,6 @@ class SerialControlPanel(private val portManager: SerialPortManager) : JPanel() 
     private val refreshButton = JButton("Refresh").apply {
         icon = AllIcons.Actions.Refresh
     }
-    private val sendPanel = JPanel()
 
     private var isConnected = false
 
@@ -113,59 +112,10 @@ class SerialControlPanel(private val portManager: SerialPortManager) : JPanel() 
             insets = Insets(5, 5, 5, 5)
         })
 
-        // 发送面板
-        add(createSendPanel(), GridBagConstraints().apply {
-            gridx = 0
-            gridy = 1
-            gridwidth = 7
-            insets = Insets(5, 5, 5, 5)
-            fill = GridBagConstraints.HORIZONTAL
-            weightx = 1.0
-        })
-
         // 刷新端口列表
         refreshPorts()
     }
 
-    private fun createSendPanel(): JPanel {
-        val panel = JPanel(BorderLayout()).apply {
-            background = JBColor.background()
-        }
-
-        val sendInput = JTextField().apply {
-            font = Font("Courier New", Font.PLAIN, 12)
-        }
-        panel.add(sendInput, BorderLayout.CENTER)
-
-        val sendButton = JButton("Send").apply {
-            icon = AllIcons.Actions.Forward
-            addActionListener {
-                val text = sendInput.text
-                if (text.isNotEmpty()) {
-                    portManager.sendDataWithNewline(text)
-                    sendInput.text = ""
-                }
-            }
-        }
-        panel.add(sendButton, BorderLayout.EAST)
-
-        // 添加回车快捷键
-        sendInput.addKeyListener(object : java.awt.event.KeyListener {
-            override fun keyTyped(e: java.awt.event.KeyEvent) {}
-            override fun keyPressed(e: java.awt.event.KeyEvent) {
-                if (e.keyCode == java.awt.event.KeyEvent.VK_ENTER) {
-                    val text = sendInput.text
-                    if (text.isNotEmpty()) {
-                        portManager.sendDataWithNewline(text)
-                        sendInput.text = ""
-                    }
-                }
-            }
-            override fun keyReleased(e: java.awt.event.KeyEvent) {}
-        })
-
-        return panel
-    }
 
     fun refreshPorts() {
         val selectedPort = portComboBox.selectedItem as? String

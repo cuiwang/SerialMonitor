@@ -40,6 +40,15 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <h3>Version 1.2.0 - UI & UX Enhancements (2026-02-26)</h3>
+        <ul>
+            <li>Plotter: improved styling for dark/light themes</li>
+            <li>Plotter: taller default view and cleaner legend layout</li>
+            <li>Monitor: chat-style send box moved below logs</li>
+            <li>Plotter: added Pause/Resume button in toolbar</li>
+            <li>Plotter: optional smaller axis label font for clarity</li>
+        </ul>
+
         <h3>Version 1.1.0 - Enhanced Monitoring (2026-02-25)</h3>
         <ul>
             <li>Added Pause/Resume button to pause data reception and output</li>
