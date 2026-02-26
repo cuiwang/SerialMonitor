@@ -285,6 +285,7 @@ class SerialPlotterPanel : JPanel() {
                     markerColor = color
                 }
             }
+            }
 
             // 自动调整Y轴范围
             val allValues = allSeriesNames

@@ -21,7 +21,7 @@ class PlotterSettingsDialog(
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
         setupUI()
-        setSize(450, 280)  // 增加高度确保所有内容可见
+        setSize(450, 250)  // 删除Example Format后进一步减小高度
         setLocationRelativeTo(parent)
     }
 
@@ -48,7 +48,6 @@ class PlotterSettingsDialog(
 
             // 平滑曲线复选框
             add(createCheckBoxPanel("Smooth Line:", smoothLineCheckBox))
-            add(Box.createVerticalStrut(10))  // 添加间距
 
             add(Box.createVerticalGlue())  // 底部弹性空间
         }
