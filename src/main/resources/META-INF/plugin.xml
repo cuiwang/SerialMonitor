@@ -1,6 +1,7 @@
 <idea-plugin>
     <id>com.serialmonitor.cuiwang</id>
     <name>Serial Monitor</name>
+    <version>1.2.1</version>
     <vendor email="1991.cuiwang@gmail.com" url="https://github.com/cuiwang/SerialMonitor">Serial Monitor</vendor>
 
     <description><![CDATA[
@@ -40,6 +41,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <h3>Version 1.2.1 - Icon Update & Minor Fixes (2026-04-30)</h3>
+        <ul>
+            <li>Updated plugin icon to better represent serial waveform and connector</li>
+            <li>Minor UI/packaging fixes and metadata updates for marketplace release</li>
+        </ul>
+
         <h3>Version 1.2.0 - UI & UX Enhancements (2026-02-26)</h3>
         <ul>
             <li>Plotter: improved styling for dark/light themes</li>
@@ -128,4 +135,3 @@
         <!-- Add actions here if needed -->
     </actions>
 </idea-plugin>
-
